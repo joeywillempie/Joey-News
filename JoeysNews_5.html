@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Joey's News</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@600;700&family=Source+Sans+3:wght@300;400;600&family=DM+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#09090f;--surf:#0e0e18;--card:#131320;--card-h:#18182a;
+  --bdr:#1e1e30;--bdr2:#2a2a42;
+  --text:#ddddf2;--muted:#6868a0;--dim:#35355a;
+  --pu:#7c3aed;--pu-l:#a78bfa;--pu-d:#4c1d95;
+  --pu-bg:rgba(124,58,237,.12);--pu-bdr:rgba(124,58,237,.35);
+  --grn:#10b981;--org:#f59e0b;
+}
+body.dim-mode{
+  --bg:#111118;--surf:#16161f;--card:#1a1a28;--card-h:#1f1f32;
+  --bdr:#232338;--bdr2:#2f2f4a;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Source Sans 3',sans-serif;font-weight:300;min-height:100vh;line-height:1.55}
+
+/* ═══ HEADER ═══════════════════════════════ */
+.hdr{position:sticky;top:0;z-index:200;background:var(--surf);border-bottom:1px solid var(--bdr)}
+.hdr-top{height:60px;padding:0 24px;display:flex;align-items:center;gap:12px}
+.logo{font-family:'Lora',serif;font-weight:700;font-size:2.4rem;color:var(--text);letter-spacing:-.05em;flex-shrink:0;cursor:pointer;text-decoration:none;line-height:1}
+.logo em{font-style:normal;color:var(--pu-l)}
+.logo:hover em{color:#c4b5fd}
+.hdr-fx{display:flex;align-items:center;gap:6px;margin-left:16px}
+.fx-tile{font-family:'DM Mono',monospace;font-size:.6rem;padding:3px 8px;border:1px solid var(--bdr);border-radius:4px;color:var(--muted);white-space:nowrap;cursor:default}
+.fx-tile .fx-v{color:var(--text);font-size:.65rem}
+.fx-tile .fx-chg{font-size:.58rem}
+.fx-tile .fx-chg.pos{color:var(--grn)}.fx-tile .fx-chg.neg{color:#f87171}
+.hdr-date{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--muted);margin-left:auto;white-space:nowrap}
+.hdr-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.icon-btn{font-size:1rem;line-height:1;padding:5px 7px;border:1px solid var(--bdr2);background:transparent;color:var(--muted);cursor:pointer;border-radius:6px;transition:all .15s;flex-shrink:0;position:relative}
+.icon-btn:hover{border-color:var(--pu-bdr);color:var(--pu-l)}
+.icon-btn.active{border-color:var(--pu-l);background:var(--pu-bg);color:var(--pu-l)}
+.icon-btn .badge{position:absolute;top:-4px;right:-4px;background:var(--pu);color:#fff;font-family:'DM Mono',monospace;font-size:.5rem;padding:1px 4px;border-radius:8px;min-width:14px;text-align:center}
+
+/* Search bar */
+.search-bar{border-top:1px solid var(--bdr);padding:0 24px;height:0;overflow:hidden;transition:height .2s ease;background:var(--surf);display:flex;align-items:center;gap:10px}
+.search-bar.open{height:46px}
+.search-input{flex:1;background:transparent;border:none;outline:none;font-family:'Source Sans 3',sans-serif;font-size:.9rem;color:var(--text);font-weight:300}
+.search-input::placeholder{color:var(--dim)}
+.search-count{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);white-space:nowrap}
+
+/* Tab bar */
+.tab-bar{border-top:1px solid var(--bdr);padding:0 24px;display:flex;align-items:center;height:44px;overflow-x:auto;scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-btn{font-family:'Source Sans 3',sans-serif;font-size:1.15rem;font-weight:400;padding:0 18px;height:44px;border:none;background:transparent;color:var(--muted);cursor:pointer;position:relative;white-space:nowrap;transition:color .15s;letter-spacing:-.01em}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--text);font-weight:600}
+.tab-btn.active::after{content:'';position:absolute;bottom:0;left:18px;right:18px;height:2px;background:var(--pu-l);border-radius:2px 2px 0 0}
+.tab-btn .tab-badge{display:inline-block;background:var(--pu-bg);border:1px solid var(--pu-bdr);color:var(--pu-l);font-family:'DM Mono',monospace;font-size:.5rem;padding:1px 5px;border-radius:8px;margin-left:5px;vertical-align:middle}
+
+/* Sub bar */
+.sub-bar{border-top:1px solid var(--bdr);padding:0 24px;display:flex;align-items:center;gap:8px;height:40px;background:var(--bg);overflow-x:auto;scrollbar-width:none}
+.sub-bar::-webkit-scrollbar{display:none}
+.f-chip{font-family:'Source Sans 3',sans-serif;font-size:.82rem;font-weight:400;padding:3px 14px;border:1px solid var(--bdr2);background:transparent;color:#8888cc;cursor:pointer;border-radius:20px;white-space:nowrap;transition:all .15s}
+.f-chip:hover{border-color:var(--pu-l);color:var(--text)}
+.f-chip.active{border-color:var(--pu-l);background:var(--pu-bg);color:#fff;font-weight:600}
+
+/* ═══ STATUS ════════════════════════════════ */
+.status-bar{padding:6px 24px;display:flex;align-items:center;gap:8px;font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);background:var(--surf);border-bottom:1px solid var(--bdr)}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--dim);flex-shrink:0}
+.dot.loading{background:var(--org);animation:blink 1s infinite}
+.dot.ok{background:var(--grn)}.dot.error{background:#ef4444}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* ═══ TICKER ════════════════════════════════ */
+.snel-bar{background:var(--surf);border-bottom:1px solid var(--bdr);padding:0 24px;display:none;align-items:center;height:44px;overflow:hidden}
+.snel-label{font-family:'DM Mono',monospace;font-size:.6rem;color:#fff;background:var(--pu);padding:3px 10px;border-radius:3px;white-space:nowrap;flex-shrink:0;letter-spacing:.09em;text-transform:uppercase;margin-right:20px}
+.snel-track{flex:1;overflow:hidden}
+.snel-items{display:flex;align-items:center;animation:ticker 90s linear infinite;white-space:nowrap}
+.snel-items:hover{animation-play-state:paused}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.snel-item{display:inline-flex;align-items:center;gap:10px;padding-right:40px;text-decoration:none;flex-shrink:0}
+.snel-t{font-family:'DM Mono',monospace;font-size:.65rem;color:var(--pu-l);flex-shrink:0}
+.snel-h{font-size:.95rem;color:var(--text);transition:color .15s;font-weight:400}
+.snel-item:hover .snel-h{color:var(--pu-l)}
+.snel-pip{width:3px;height:3px;border-radius:50%;background:var(--dim);flex-shrink:0;margin-right:40px}
+
+/* ═══ SETTINGS PANEL ════════════════════════ */
+.settings-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;opacity:0;transition:opacity .2s}
+.settings-overlay.open{display:block;opacity:1}
+.settings-panel{position:fixed;right:0;top:0;bottom:0;width:320px;background:var(--surf);border-left:1px solid var(--bdr);z-index:301;transform:translateX(100%);transition:transform .25s ease;overflow-y:auto;display:flex;flex-direction:column}
+.settings-panel.open{transform:translateX(0)}
+.settings-head{padding:18px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.settings-title{font-family:'Source Sans 3',sans-serif;font-weight:600;font-size:1rem;color:var(--text)}
+.settings-close{font-size:1.2rem;background:transparent;border:none;color:var(--muted);cursor:pointer;padding:4px}
+.settings-close:hover{color:var(--text)}
+.settings-section{padding:16px 20px;border-bottom:1px solid var(--bdr)}
+.settings-section-title{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.src-toggle{display:flex;align-items:center;justify-content:space-between;padding:6px 0;gap:8px}
+.src-toggle-name{font-size:.82rem;color:var(--text);flex:1}
+.src-toggle-type{font-family:'DM Mono',monospace;font-size:.5rem;color:var(--dim);padding:1px 5px;border:1px solid var(--bdr);border-radius:3px}
+.toggle{position:relative;width:32px;height:18px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--bdr2);border-radius:18px;cursor:pointer;transition:background .2s}
+.toggle-slider::before{content:'';position:absolute;height:12px;width:12px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:transform .2s,background .2s}
+.toggle input:checked + .toggle-slider{background:var(--pu-bg);border:1px solid var(--pu-bdr)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(14px);background:var(--pu-l)}
+.theme-row{display:flex;gap:8px;margin-top:4px}
+.theme-btn{flex:1;padding:8px;border:1px solid var(--bdr2);background:transparent;color:var(--muted);cursor:pointer;border-radius:6px;font-family:'DM Mono',monospace;font-size:.62rem;transition:all .15s;letter-spacing:.04em}
+.theme-btn:hover{border-color:var(--pu-bdr);color:var(--pu-l)}
+.theme-btn.active{border-color:var(--pu-l);background:var(--pu-bg);color:var(--pu-l)}
+.kbd-grid{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;align-items:center}
+.kbd{font-family:'DM Mono',monospace;font-size:.6rem;background:var(--card);border:1px solid var(--bdr2);padding:2px 6px;border-radius:4px;color:var(--pu-l);white-space:nowrap}
+.kbd-desc{font-size:.78rem;color:var(--muted)}
+
+/* ═══ MAIN ══════════════════════════════════ */
+main{max-width:1280px;margin:0 auto;padding:24px 24px 80px}
+
+/* ═══ IMAGE FALLBACK ════════════════════════ */
+.img-wrap{position:relative;overflow:hidden;background:var(--card);flex-shrink:0}
+.img-wrap img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;z-index:2}
+.img-fallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;overflow:hidden}
+.fb-noise{position:absolute;inset:0;opacity:.04;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.fb-ring{position:absolute;width:75%;padding-bottom:75%;border-radius:50%;border:1px solid;opacity:.1;top:50%;left:50%;transform:translate(-50%,-50%)}
+.fb-ring2{position:absolute;width:52%;padding-bottom:52%;border-radius:50%;border:1px solid;opacity:.07;top:50%;left:50%;transform:translate(-50%,-50%)}
+.fb-logo{font-family:'Lora',serif;font-weight:700;line-height:.9;user-select:none;letter-spacing:-.04em;position:relative;z-index:2;text-align:center}
+
+/* read + saved state */
+a.art-read{opacity:.45}
+a.art-read:hover{opacity:.75}
+.bookmark-btn{position:absolute;top:8px;right:8px;z-index:10;background:rgba(9,9,15,.7);border:1px solid var(--bdr2);color:var(--muted);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:all .15s;backdrop-filter:blur(4px)}
+.bookmark-btn:hover{border-color:var(--pu-bdr);color:var(--pu-l)}
+.bookmark-btn.saved{border-color:var(--pu-bdr);color:var(--pu-l);background:var(--pu-bg)}
+.art-container{position:relative}
+
+/* ═══ HERO LAYOUT ═══════════════════════════ */
+.hero-layout{display:grid;grid-template-columns:1fr 300px;gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin-bottom:24px}
+.hero-main{background:var(--card);display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:background .15s;position:relative}
+.hero-main:hover{background:var(--card-h)}
+.hero-main .img-wrap{height:280px;flex-shrink:0}
+.hero-body{padding:18px 20px 22px;display:flex;flex-direction:column;gap:9px}
+.art-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.src-tag{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);letter-spacing:.06em}
+.type-badge{font-family:'DM Mono',monospace;font-size:.5rem;padding:1px 6px;border-radius:3px;letter-spacing:.05em;text-transform:uppercase}
+.tb-col{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.25)}
+.tb-long{background:rgba(16,185,129,.1);color:#6ee7b7;border:1px solid rgba(16,185,129,.2)}
+.art-time{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dim);margin-left:auto}
+.read-time{font-family:'DM Mono',monospace;font-size:.55rem;color:var(--pu-l);padding:1px 5px;border:1px solid var(--pu-bdr);border-radius:3px}
+.hero-title{font-family:'Lora',serif;font-weight:700;font-size:1.6rem;line-height:1.25;color:var(--text);letter-spacing:-.02em}
+.hero-desc{font-size:.88rem;line-height:1.65;color:var(--muted)}
+.rd-link{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--pu-l);letter-spacing:.04em;display:inline-flex;align-items:center;gap:6px;transition:gap .2s}
+.rd-link:hover{gap:10px}
+.hero-sidebar{background:var(--card);display:flex;flex-direction:column}
+.sb-head{padding:12px 16px 10px;font-family:'Source Sans 3',sans-serif;font-size:.78rem;font-weight:600;color:var(--text);border-bottom:1px solid var(--bdr);flex-shrink:0}
+.sb-list{overflow-y:auto;flex:1}
+.sb-item{display:flex;flex-direction:column;gap:4px;padding:10px 14px;border-bottom:1px solid var(--bdr);text-decoration:none;color:inherit;transition:background .12s;position:relative}
+.sb-item:hover{background:var(--card-h)}
+.sb-meta{display:flex;align-items:center;gap:6px}
+.sb-src{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted)}
+.sb-time{font-family:'DM Mono',monospace;font-size:.56rem;color:var(--dim);margin-left:auto}
+.sb-title{font-size:.95rem;font-weight:400;line-height:1.38;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ═══ TRENDING ══════════════════════════════ */
+.trending-bar{background:var(--card);border:1px solid var(--bdr);border-radius:8px;padding:14px 18px;margin-bottom:24px;display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.trending-label{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--org);flex-shrink:0;padding-top:2px}
+.trending-items{display:flex;flex-wrap:wrap;gap:8px;flex:1}
+.trending-item{font-family:'Source Sans 3',sans-serif;font-size:.8rem;color:var(--text);background:var(--bg);border:1px solid var(--bdr2);border-radius:4px;padding:3px 10px;text-decoration:none;transition:all .15s;white-space:nowrap}
+.trending-item:hover{border-color:var(--pu-bdr);color:var(--pu-l)}
+
+/* ═══ SECTION HEADER ════════════════════════ */
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:12px;margin-top:24px}
+.sec-label{font-family:'Source Sans 3',sans-serif;font-size:.9rem;font-weight:600;color:var(--text);white-space:nowrap}
+.sec-head::after{content:'';flex:1;height:1px;background:var(--bdr)}
+
+/* ═══ SECTION GRID ══════════════════════════ */
+.sec-grid{display:grid;grid-template-columns:3fr 2fr;gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin-bottom:24px}
+.sec-big{background:var(--card);display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:background .15s;position:relative}
+.sec-big:hover{background:var(--card-h)}
+.sec-big .img-wrap{height:200px}
+.sec-big-body{padding:14px 16px 18px;display:flex;flex-direction:column;gap:7px;flex:1}
+.sec-title{font-family:'Lora',serif;font-weight:700;font-size:1.05rem;line-height:1.3;color:var(--text)}
+.sec-desc{font-size:.8rem;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sec-smalls{display:flex;flex-direction:column;gap:1px;background:var(--bdr)}
+.sec-small{background:var(--card);display:flex;gap:10px;padding:12px 14px;text-decoration:none;color:inherit;transition:background .15s;flex:1;position:relative}
+.sec-small:hover{background:var(--card-h)}
+.sec-small .img-wrap{width:68px;height:56px;border-radius:4px;flex-shrink:0}
+.sec-small-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.sm-title{font-size:.83rem;font-weight:400;line-height:1.38;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sm-meta{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+
+/* ═══ COLUMN CARDS ══════════════════════════ */
+.col-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin-bottom:24px}
+.col-card{background:var(--card);display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:background .15s;animation:fadeUp .3s ease both;overflow:hidden;position:relative}
+.col-card:hover{background:var(--card-h)}
+.col-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Lora',serif;font-size:.78rem;font-weight:700;flex-shrink:0}
+.col-source{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted)}
+.col-title{font-family:'Lora',serif;font-weight:700;font-size:.95rem;line-height:1.35;color:var(--text)}
+.col-desc{font-size:.78rem;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+.col-link{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--pu-l);margin-top:4px}
+.col-card .img-wrap{height:140px;flex-shrink:0}
+
+/* ═══ ARTIKEL CARDS ════════════════════════ */
+.lr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin-bottom:24px}
+.lr-card{background:var(--card);display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:background .15s;animation:fadeUp .3s ease both;position:relative}
+.lr-card:hover{background:var(--card-h)}
+.lr-card .img-wrap{height:190px}
+.lr-body{padding:16px 18px 20px;display:flex;flex-direction:column;gap:7px}
+.lr-title{font-family:'Lora',serif;font-weight:700;font-size:1.15rem;line-height:1.3;color:var(--text)}
+.lr-desc{font-size:.82rem;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ═══ NIEUWS LIST ════════════════════════════ */
+.news-list{display:flex;flex-direction:column;gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin-bottom:24px}
+.news-row{background:var(--card);display:flex;align-items:flex-start;gap:14px;padding:12px 16px;text-decoration:none;color:inherit;transition:background .12s;border-bottom:1px solid var(--bdr);position:relative}
+.news-row:hover{background:var(--card-h)}
+.news-row .img-wrap{width:86px;height:64px;border-radius:4px;flex-shrink:0}
+.news-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.news-title{font-family:'Lora',serif;font-weight:700;font-size:.98rem;line-height:1.35;color:var(--text)}
+.news-desc{font-size:.76rem;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.news-bm{position:absolute;right:14px;bottom:12px;background:transparent;border:none;color:var(--dim);cursor:pointer;font-size:.82rem;padding:3px;transition:color .15s}
+.news-bm:hover{color:var(--pu-l)}
+.news-bm.saved{color:var(--pu-l)}
+
+/* ═══ PODCAST TAB ════════════════════════════ */
+.pod-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin-bottom:24px}
+.pod-card{background:var(--card);display:flex;flex-direction:column;gap:0;text-decoration:none;color:inherit;transition:background .15s;animation:fadeUp .3s ease both}
+.pod-card:hover{background:var(--card-h)}
+.pod-card .img-wrap{height:160px;flex-shrink:0}
+.pod-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:8px;flex:1}
+.pod-show{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--pu-l);letter-spacing:.06em}
+.pod-title{font-family:'Lora',serif;font-weight:700;font-size:.95rem;line-height:1.32;color:var(--text)}
+.pod-desc{font-size:.76rem;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+.pod-player{display:flex;align-items:center;gap:10px;margin-top:auto;padding-top:8px}
+.pod-play{width:30px;height:30px;border-radius:50%;background:var(--pu-bg);border:1px solid var(--pu-bdr);color:var(--pu-l);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0;transition:all .15s}
+.pod-play:hover{background:var(--pu-d);color:#fff}
+.pod-play.playing{background:var(--pu);color:#fff}
+.pod-dur{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted)}
+.pod-prog-wrap{flex:1;height:3px;background:var(--bdr2);border-radius:3px;overflow:hidden;cursor:pointer}
+.pod-prog{height:100%;background:var(--pu-l);border-radius:3px;width:0%;transition:width .5s linear}
+.pod-ext{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--dim);text-decoration:none;flex-shrink:0}
+.pod-ext:hover{color:var(--pu-l)}
+
+/* ═══ OPGESLAGEN TAB ════════════════════════ */
+.saved-empty{padding:60px 40px;text-align:center;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:12px}
+.saved-empty-icon{font-size:2rem;opacity:.4}
+.saved-empty-text{font-size:.9rem}
+.saved-clear{font-family:'DM Mono',monospace;font-size:.62rem;padding:5px 14px;border:1px solid var(--bdr2);background:transparent;color:var(--muted);cursor:pointer;border-radius:4px;transition:all .15s;margin-top:8px}
+.saved-clear:hover{border-color:#7f1d1d;color:#f87171}
+
+/* ═══ MARKTEN TAB ═══════════════════════════ */
+.markten-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.markten-title{font-family:'Lora',serif;font-weight:700;font-size:1.35rem;color:var(--text)}
+.time-btns{display:flex;gap:4px}
+.t-btn{font-family:'DM Mono',monospace;font-size:.62rem;padding:4px 10px;border:1px solid var(--bdr2);background:transparent;color:var(--muted);cursor:pointer;border-radius:4px;transition:all .15s}
+.t-btn:hover{border-color:var(--pu-bdr);color:var(--pu-l)}
+.t-btn.active{border-color:var(--pu-bdr);background:var(--pu-bg);color:var(--pu-l)}
+.charts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px}
+.chart-card{background:var(--card);border:1px solid var(--bdr);border-radius:8px;overflow:hidden}
+.chart-card-wide{grid-column:1/-1}
+.chart-head{padding:12px 16px 8px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.chart-name{font-family:'Source Sans 3',sans-serif;font-size:.86rem;font-weight:600;color:var(--text)}
+.chart-val{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--text)}
+.chart-chg{font-family:'DM Mono',monospace;font-size:.68rem}
+.chart-chg.pos{color:var(--grn)}.chart-chg.neg{color:#f87171}
+.chart-sub{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);margin-left:auto}
+.chart-body{padding:0 8px 10px}
+.chart-canvas{width:100%;display:block}
+.ticker-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin-bottom:24px}
+.crypto-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--bdr);border:1px solid var(--bdr);border-radius:8px;overflow:hidden;margin-bottom:24px}
+.ticker-tile{background:var(--card);padding:12px 14px;display:flex;flex-direction:column;gap:3px}
+.tt-name{font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);letter-spacing:.06em}
+.tt-val{font-family:'Source Sans 3',sans-serif;font-size:1.15rem;font-weight:600;color:var(--text)}
+.tt-chg{font-family:'DM Mono',monospace;font-size:.62rem}
+.tt-chg.pos{color:var(--grn)}.tt-chg.neg{color:#f87171}
+.tt-upd{font-family:'DM Mono',monospace;font-size:.5rem;color:var(--dim);margin-top:1px}
+.mkt-section-title{font-family:'Source Sans 3',sans-serif;font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:8px;letter-spacing:.02em}
+
+/* ═══ SKELETONS ═════════════════════════════ */
+.sk-base{border-radius:6px;background:linear-gradient(90deg,var(--card) 25%,var(--card-h) 50%,var(--card) 75%);background-size:300% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{from{background-position:100%}to{background-position:-100%}}
+.sk-hero{height:320px;margin-bottom:24px;border-radius:8px}
+.sk-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.sk-card{height:220px;border-radius:6px;background:linear-gradient(90deg,var(--card) 25%,var(--card-h) 50%,var(--card) 75%);background-size:300% 100%;animation:shimmer 1.5s infinite}
+.sk-list{display:flex;flex-direction:column;gap:1px;margin-bottom:24px}
+.sk-row-item{height:80px;border-radius:0;background:linear-gradient(90deg,var(--card) 25%,var(--card-h) 50%,var(--card) 75%);background-size:300% 100%;animation:shimmer 1.5s infinite}
+
+/* ═══ BACK TO TOP ════════════════════════════ */
+.back-top{position:fixed;bottom:28px;right:28px;width:40px;height:40px;border-radius:50%;background:var(--pu);color:#fff;border:none;cursor:pointer;font-size:1.1rem;display:none;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(124,58,237,.4);z-index:150;transition:opacity .2s,transform .2s}
+.back-top.visible{display:flex}
+.back-top:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(124,58,237,.5)}
+
+/* ═══ FOOTER ════════════════════════════════ */
+footer{border-top:1px solid var(--bdr);padding:14px 24px;font-family:'DM Mono',monospace;font-size:.58rem;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;background:var(--surf)}
+.ft-brand{color:var(--text)}.ft-brand em{font-style:normal;color:var(--pu-l)}
+
+/* ═══ SEARCH RESULTS ════════════════════════ */
+.search-hit mark{background:rgba(167,139,250,.2);color:var(--pu-l);border-radius:2px}
+
+/* ═══ SHORTCUTS TOAST ═══════════════════════ */
+.kbd-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surf);border:1px solid var(--pu-bdr);border-radius:8px;padding:10px 16px;font-family:'DM Mono',monospace;font-size:.65rem;color:var(--pu-l);z-index:400;opacity:0;transition:opacity .3s;pointer-events:none}
+.kbd-toast.show{opacity:1}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ ERROR ══════════════════════════════════ */
+.err-box{background:var(--card);border:1px solid #7f1d1d;border-radius:8px;padding:24px;font-size:.86rem;color:var(--muted);line-height:1.6}
+.empty{padding:50px;text-align:center;font-family:'Source Sans 3',sans-serif;font-size:.95rem;color:var(--muted)}
+
+/* ═══ RESPONSIVE ════════════════════════════ */
+@media(max-width:960px){
+  .hdr-top,.tab-bar,.sub-bar,.snel-bar,main,footer{padding-left:16px;padding-right:16px}
+  .hero-layout{grid-template-columns:1fr}
+  .hero-sidebar{display:none}
+  .sec-grid{grid-template-columns:1fr}
+  .sec-smalls{flex-direction:row}
+  .col-grid{grid-template-columns:repeat(2,1fr)}
+  .lr-grid{grid-template-columns:1fr}
+  .charts-grid{grid-template-columns:1fr}
+  .ticker-row{grid-template-columns:repeat(2,1fr)}
+  .crypto-row{grid-template-columns:repeat(3,1fr)}
+  .pod-grid{grid-template-columns:1fr}
+  .hdr-fx{display:none}
+}
+@media(max-width:600px){
+  .col-grid,.crypto-row{grid-template-columns:1fr}
+  .ticker-row{grid-template-columns:repeat(2,1fr)}
+  .sec-smalls{flex-direction:column}
+  main{padding:12px}
+  .back-top{bottom:16px;right:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- Settings panel -->
+<div class="settings-overlay" id="settingsOverlay"></div>
+<div class="settings-panel" id="settingsPanel">
+  <div class="settings-head">
+    <span class="settings-title">⚙ Instellingen</span>
+    <button class="settings-close" id="settingsClose">✕</button>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">Thema</div>
+    <div class="theme-row">
+      <button class="theme-btn active" id="themeZwart">Zwart</button>
+      <button class="theme-btn" id="themeDim">Dimmer</button>
+    </div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">Bronnen</div>
+    <div id="srcToggles"></div>
+  </div>
+  <div class="settings-section">
+    <div class="settings-section-title">Toetsenbord</div>
+    <div class="kbd-grid" id="kbdGrid">
+      <span class="kbd">G H</span><span class="kbd-desc">Ga naar Home</span>
+      <span class="kbd">G N</span><span class="kbd-desc">Ga naar Nieuws</span>
+      <span class="kbd">G C</span><span class="kbd-desc">Ga naar Columns</span>
+      <span class="kbd">G A</span><span class="kbd-desc">Ga naar Artikelen</span>
+      <span class="kbd">G M</span><span class="kbd-desc">Ga naar Markten</span>
+      <span class="kbd">G P</span><span class="kbd-desc">Ga naar Podcasts</span>
+      <span class="kbd">G S</span><span class="kbd-desc">Ga naar Opgeslagen</span>
+      <span class="kbd">R</span><span class="kbd-desc">Vernieuwen</span>
+      <span class="kbd">/</span><span class="kbd-desc">Zoeken</span>
+      <span class="kbd">Esc</span><span class="kbd-desc">Sluiten / Wis zoekopdracht</span>
+    </div>
+  </div>
+</div>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <a class="logo" id="logoLink" href="#">Joey's <em>News</em></a>
+    <div class="hdr-fx" id="hdrFx"></div>
+    <div class="hdr-date" id="hdrDate">—</div>
+    <div class="hdr-actions">
+      <button class="icon-btn" id="searchBtn" title="Zoeken (/)">🔍</button>
+      <button class="icon-btn" id="refreshBtn" title="Vernieuwen (R)">↻</button>
+      <button class="icon-btn" id="settingsBtn" title="Instellingen">⚙</button>
+    </div>
+  </div>
+  <div class="search-bar" id="searchBar">
+    <span style="color:var(--dim);font-size:.85rem">🔍</span>
+    <input class="search-input" id="searchInput" placeholder="Zoek in alle artikelen…" autocomplete="off">
+    <span class="search-count" id="searchCount"></span>
+  </div>
+  <div class="tab-bar" id="tabBar">
+    <button class="tab-btn active" data-tab="home">Home</button>
+    <button class="tab-btn" data-tab="nieuws">Nieuws</button>
+    <button class="tab-btn" data-tab="columns">Columns</button>
+    <button class="tab-btn" data-tab="artikelen">Artikelen</button>
+    <button class="tab-btn" data-tab="podcasts">🎙 Podcasts</button>
+    <button class="tab-btn" data-tab="markten">📈 Markten</button>
+    <button class="tab-btn" data-tab="opgeslagen">🔖 Opgeslagen<span class="tab-badge" id="savedBadge" style="display:none">0</span></button>
+  </div>
+  <div class="sub-bar" id="subBar">
+    <button class="f-chip" data-filter="tech">Tech</button>
+    <button class="f-chip" data-filter="business">Business</button>
+    <button class="f-chip" data-filter="ai">AI</button>
+    <button class="f-chip" data-filter="politiek">Politiek</button>
+  </div>
+</div>
+
+<div class="snel-bar" id="snelBar">
+  <span class="snel-label">Snel nieuws</span>
+  <div class="snel-track"><div class="snel-items" id="snelItems"></div></div>
+</div>
+
+<div class="status-bar" id="statusBar" style="display:none">
+  <div class="dot loading" id="statDot"></div>
+  <span id="statText"></span>
+</div>
+
+<main><div id="content"></div></main>
+
+<button class="back-top" id="backTop" title="Terug naar boven">↑</button>
+<div class="kbd-toast" id="kbdToast"></div>
+
+<footer>
+  <span class="ft-brand">Joey's <em>News</em> · Tech &amp; Business</span>
+  <span>BBC · Verge · TechCrunch · Ars · Reuters · NOS · Tweakers · BNR · FD · MIT TR · Wired · 404 Media · Platformer · IEEE · Hard Fork · Darknet Diaries</span>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+/* ══════════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════ */
+const P = 'https://api.rss2json.com/v1/api.json?rss_url=';
+
+const FEEDS = [
+  // ─── NIEUWS — English ─────────────────────────
+  { n:'BBC Technology',    u:'https://feeds.bbci.co.uk/news/technology/rss.xml',         lang:'en', type:'news',     tags:['tech'],            max:5 },
+  { n:'The Verge',         u:'https://www.theverge.com/rss/index.xml',                   lang:'en', type:'news',     tags:['tech'],            max:5 },
+  { n:'TechCrunch',        u:'https://techcrunch.com/feed/',                             lang:'en', type:'news',     tags:['tech','business'], max:5 },
+  { n:'Reuters',           u:'https://feeds.reuters.com/reuters/technologyNews',          lang:'en', type:'news',     tags:['tech','business'], max:5 },
+  { n:'Engadget',          u:'https://www.engadget.com/rss.xml',                         lang:'en', type:'news',     tags:['tech'],            max:4 },
+  { n:'CNBC Tech',         u:'https://www.cnbc.com/id/19854910/device/rss/rss.html',     lang:'en', type:'news',     tags:['tech','business'], max:4 },
+  // ─── NIEUWS — Dutch ───────────────────────────
+  { n:'NOS Tech',          u:'https://feeds.nos.nl/nosnieuwstech',                       lang:'nl', type:'news',     tags:['tech'],            max:4 },
+  { n:'NOS Politiek',      u:'https://feeds.nos.nl/nosnieuwspolitiek',                   lang:'nl', type:'news',     tags:['politiek'],        max:4 },
+  { n:'Tweakers',          u:'https://feeds.feedburner.com/tweakers/mixed',              lang:'nl', type:'news',     tags:['tech'],            max:4 },
+  { n:'NU.nl Tech',        u:'https://www.nu.nl/rss/Tech',                               lang:'nl', type:'news',     tags:['tech'],            max:3 },
+  { n:'NU.nl Economie',    u:'https://www.nu.nl/rss/Economie',                           lang:'nl', type:'news',     tags:['business'],        max:3 },
+  { n:'BNR',               u:'https://www.bnr.nl/nieuws/rss',                            lang:'nl', type:'news',     tags:['business','tech'], max:5 },
+  { n:'FD',                u:'https://fd.nl/?rss=',                                      lang:'nl', type:'news',     tags:['business'],        max:5 },
+  { n:'RTL Nieuws',        u:'https://www.rtlnieuws.nl/feeds/rss/nieuws.xml',            lang:'nl', type:'news',     tags:['business'],        max:3 },
+  // ─── COLUMNS ──────────────────────────────────
+  { n:'TC Opinion',        u:'https://techcrunch.com/category/opinion/feed/',            lang:'en', type:'column',   tags:['tech'],            max:8 },
+  { n:'MIT Tech Review',   u:'https://www.technologyreview.com/feed/',                   lang:'en', type:'column',   tags:['tech','ai'],       max:8 },
+  { n:'The Register Ops',  u:'https://www.theregister.com/opinions/rss/',                lang:'en', type:'column',   tags:['tech'],            max:8 },
+  { n:'404 Media',         u:'https://www.404media.co/feed',                             lang:'en', type:'column',   tags:['tech'],            max:8 },
+  { n:'The Markup',        u:'https://themarkup.org/feed/',                              lang:'en', type:'column',   tags:['tech','business'], max:8 },
+  { n:'Rest of World',     u:'https://restofworld.org/feed/',                            lang:'en', type:'column',   tags:['tech','business'], max:6 },
+  { n:'Platformer',        u:'https://www.platformer.news/feed',                         lang:'en', type:'column',   tags:['tech','business'], max:6 },
+  { n:'Wired Opinion',     u:'https://www.wired.com/category/ideas/feed/',               lang:'en', type:'column',   tags:['tech','ai'],       max:6 },
+  // ─── ARTIKELEN ────────────────────────────────
+  { n:'Ars Technica',      u:'https://feeds.arstechnica.com/arstechnica/index',          lang:'en', type:'artikelen',tags:['tech'],            max:8 },
+  { n:'Wired',             u:'https://www.wired.com/feed/rss',                           lang:'en', type:'artikelen',tags:['tech','ai'],       max:8 },
+  { n:'IEEE Spectrum',     u:'https://spectrum.ieee.org/feeds/feed.rss',                 lang:'en', type:'artikelen',tags:['tech'],            max:6 },
+  { n:'New Yorker Tech',   u:'https://www.newyorker.com/feed/tech',                      lang:'en', type:'artikelen',tags:['tech'],            max:5 },
+  { n:'The Atlantic Tech', u:'https://www.theatlantic.com/feed/category/technology/',    lang:'en', type:'artikelen',tags:['tech','business'], max:5 },
+  // ─── PODCASTS ─────────────────────────────────
+  { n:'Hard Fork',         u:'https://feeds.simplecast.com/l2i9YnTd',                    lang:'en', type:'podcast',  tags:['tech','business'], max:5 },
+  { n:'Darknet Diaries',   u:'https://feeds.megaphone.fm/darknetdiaries',                lang:'en', type:'podcast',  tags:['tech'],            max:4 },
+  { n:'Lex Fridman',       u:'https://lexfridman.com/feed/podcast/',                     lang:'en', type:'podcast',  tags:['tech','ai'],       max:3 },
+  { n:'Changelog',         u:'https://changelog.com/podcast/feed',                       lang:'en', type:'podcast',  tags:['tech'],            max:4 },
+  { n:'BNR Beurs',         u:'https://www.bnr.nl/tag/beurs/rss',                         lang:'nl', type:'podcast',  tags:['business'],        max:4 },
+];
+
+const AI_KW  = ['artificial intelligence',' ai ','machine learning','llm','chatgpt','openai','gemini','claude ai','gpt-','deep learning','neural network','robot','automation','algoritm'];
+const BIZ_KW = ['economy','market','stock market','investment','finance','earnings','revenue','bank','acquisition','merger','startup','funding','ipo','economie','aandelenmarkt','beurs','investering','overname','fusie','ondernemer'];
+const POL_KW = ['politiek','kabinet','minister','tweede kamer','parlement','verkiezing','coalitie','premier','senate','congress','government','election','parliament','legislation','trump','brussel','europese unie','eu-'];
+
+/* ══════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════ */
+var allArticles = [], currentView = 'home', currentFilter = null, isLoading = false;
+var mktPeriod = '1M', charts = {};
+var disabledSources = {};
+var currentAudio = null, currentAudioCard = null;
+var searchActive = false, searchQuery = '';
+
+/* ══════════════════════════════════════════════
+   PERSISTENCE  (localStorage)
+══════════════════════════════════════════════ */
+function getRead(){try{return new Set(JSON.parse(localStorage.getItem('jn_read')||'[]'));}catch(e){return new Set();}}
+function markRead(link){try{var s=getRead();s.add(link);localStorage.setItem('jn_read',JSON.stringify([...s]));}catch(e){}}
+function getSaved(){try{return JSON.parse(localStorage.getItem('jn_saved')||'[]');}catch(e){return[];}}
+function isSaved(link){return getSaved().some(function(a){return a.link===link;});}
+function saveArt(art){try{var s=getSaved();if(!isSaved(art.link)){s.unshift(art);localStorage.setItem('jn_saved',JSON.stringify(s.slice(0,100)));}updateSavedBadge();}catch(e){}}
+function unsaveArt(link){try{var s=getSaved().filter(function(a){return a.link!==link;});localStorage.setItem('jn_saved',JSON.stringify(s));updateSavedBadge();}catch(e){}}
+function toggleSave(art,btn){if(isSaved(art.link)){unsaveArt(art.link);if(btn){btn.textContent='🔖';btn.classList.remove('saved');btn.title='Opslaan';}}else{saveArt(art);if(btn){btn.textContent='🔖';btn.classList.add('saved');btn.title='Verwijder uit opgeslagen';}}}
+function updateSavedBadge(){var n=getSaved().length;var b=document.getElementById('savedBadge');if(b){b.textContent=n;b.style.display=n?'':'none';}}
+function getDisabled(){try{return JSON.parse(localStorage.getItem('jn_disabled')||'{}');}catch(e){return{};}}
+function saveDisabled(){try{localStorage.setItem('jn_disabled',JSON.stringify(disabledSources));}catch(e){}}
+function getTheme(){try{return localStorage.getItem('jn_theme')||'zwart';}catch(e){return'zwart';}}
+function saveTheme(t){try{localStorage.setItem('jn_theme',t);}catch(e){}}
+
+/* ══════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════ */
+function fmtDate(d){return d.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'})+' · Den Haag';}
+function relT(s){if(!s)return'';var d=(Date.now()-new Date(s))/60000;if(d<1)return'nu';if(d<60)return Math.round(d)+'m';if(d<1440)return Math.round(d/60)+'u';return Math.round(d/1440)+'d';}
+function strip(s){return(s||'').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'").trim();}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function estRead(desc){return Math.max(3,Math.ceil((desc||'').split(' ').length*4));}
+function trim2(arr){var n=Math.floor(arr.length/2)*2;return arr.slice(0,n||2);}
+function trim3(arr){var n=Math.floor(arr.length/3)*3;return arr.slice(0,n||3);}
+
+function primaryCat(feedTags,title,desc){
+  var tx=(title+' '+desc).toLowerCase();
+  if(feedTags.indexOf('politiek')!==-1||POL_KW.some(function(k){return tx.includes(k);})) return'politiek';
+  if(AI_KW.some(function(k){return tx.includes(k);})) return'ai';
+  if(feedTags.indexOf('business')!==-1||BIZ_KW.some(function(k){return tx.includes(k);})) return'business';
+  return feedTags[0]||'tech';
+}
+
+/* ══════════════════════════════════════════════
+   GRADIENT FALLBACK
+══════════════════════════════════════════════ */
+function srcGrad(name){
+  var h=0;for(var i=0;i<name.length;i++)h=(h*37+name.charCodeAt(i))&0xffff;
+  var hue=(h*137.5)%360,s=35+h%15,l=12,hue2=(hue+60)%360;
+  return{
+    bg:'linear-gradient(145deg,hsl('+hue+','+s+'%,'+l+'%) 0%,hsl('+hue2+','+(s-5)+'%,'+(l-3)+'%) 100%)',
+    accent:'hsl('+hue+','+s+'%,'+(l+8)+'%)',
+    init:name.replace(/\./g,'').split(/[\s\-_]+/).map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,3),
+    full:name
+  };
+}
+
+function imgWrap(article, wStyle, hStyle, logoSize){
+  var g=srcGrad(article.source);
+  var style=(wStyle?'width:'+wStyle+';':'')+(hStyle?'height:'+hStyle+';':'');
+  var isThumb=!!wStyle;
+  var catColors={tech:'#a78bfa',business:'#34d399',ai:'#60a5fa',politiek:'#fbbf24',podcast:'#f97316'};
+  var catColor=catColors[article.cat||article.type]||'#a78bfa';
+  var catLabel=(article.cat||article.type||'tech').toUpperCase();
+  var rings=isThumb?'':
+    '<div class="fb-ring" style="border-color:'+g.accent+'"></div>'
+    +'<div class="fb-ring2" style="border-color:'+g.accent+'"></div>';
+  var inner=isThumb
+    ?'<div class="fb-logo" style="font-size:'+logoSize+';color:rgba(255,255,255,.85)">'+g.init+'</div>'
+    :'<div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:7px">'
+       +'<div class="fb-logo" style="font-size:'+logoSize+';color:rgba(255,255,255,.9)">'+g.init+'</div>'
+       +'<div style="font-family:\'DM Mono\',monospace;font-size:.52rem;letter-spacing:.16em;color:rgba(255,255,255,.45);text-transform:uppercase">'+g.full+'</div>'
+       +'<div style="font-family:\'DM Mono\',monospace;font-size:.48rem;padding:1px 7px;border-radius:3px;border:1px solid;letter-spacing:.1em;color:'+catColor+';border-color:'+catColor+';opacity:.8">'+catLabel+'</div>'
+     +'</div>';
+  return '<div class="img-wrap" style="'+style+'">'
+    +'<div class="img-fallback" style="background:'+g.bg+'"><div class="fb-noise"></div>'+rings+inner+'</div>'
+    +(article.image?'<img src="'+esc(article.image)+'" loading="lazy" onerror="this.style.display=\'none\'">':'')
+    +'</div>';
+}
+
+function bmBtn(art){
+  var saved=isSaved(art.link);
+  return'<button class="bookmark-btn'+(saved?' saved':'')+'" data-link="'+esc(art.link)+'" title="'+(saved?'Verwijder uit opgeslagen':'Opslaan')+'" onclick="event.preventDefault();event.stopPropagation();bmClick(this,event)">🔖</button>';
+}
+function bmClick(btn,ev){
+  ev.preventDefault();ev.stopPropagation();
+  var link=btn.dataset.link;
+  var art=allArticles.find(function(a){return a.link===link;});
+  if(!art){art=getSaved().find(function(a){return a.link===link;});}
+  if(art) toggleSave(art,btn);
+  // update all bookmark buttons for same link
+  document.querySelectorAll('.bookmark-btn[data-link="'+CSS.escape(link)+'"],.news-bm[data-link="'+CSS.escape(link)+'"]').forEach(function(b){
+    b.classList.toggle('saved',isSaved(link));
+  });
+}
+window.bmClick=bmClick;
+
+function readClass(link){return getRead().has(link)?'art-read':'';}
+
+/* ══════════════════════════════════════════════
+   FETCH
+══════════════════════════════════════════════ */
+async function fetchFeed(feed){
+  var to=new Promise(function(_,r){setTimeout(function(){r(new Error('Timeout'));},9000);});
+  var res=await Promise.race([fetch(P+encodeURIComponent(feed.u)),to]);
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  var data=await res.json();
+  if(data.status!=='ok') throw new Error(data.message||'feed error');
+  var cap=feed.max||8;
+  return (data.items||[]).slice(0,cap).map(function(item){
+    var desc=strip(item.description||item.content||'').slice(0,220);
+    var title=strip(item.title||'');
+    var enc=item.enclosure||{};
+    return{
+      title:title, desc:desc,
+      link:item.link||'#',
+      date:item.pubDate||'',
+      image:(enc.link&&enc.type&&enc.type.startsWith('image')?enc.link:'')||item.thumbnail||'',
+      audio:(enc.link&&enc.type&&enc.type.startsWith('audio')?enc.link:'')
+             ||(enc.link&&enc.type&&enc.type.includes('mpeg')?enc.link:'')
+             ||(enc.url||''),
+      duration:item.itunes_duration||enc.duration||'',
+      source:feed.n, lang:feed.lang,
+      type:feed.type,
+      cat:feed.type==='podcast'?'podcast':primaryCat(feed.tags,title,desc),
+      ts:new Date(item.pubDate||0).getTime(),
+    };
+  }).filter(function(a){return a.title.length>5;});
+}
+
+/* ══════════════════════════════════════════════
+   LOAD
+══════════════════════════════════════════════ */
+async function loadNews(force){
+  if(isLoading) return;
+  var ck='jn7__'+new Date().toISOString().slice(0,13);
+  if(!force){
+    try{
+      var cv=localStorage.getItem(ck);
+      if(cv){allArticles=JSON.parse(cv);buildSnel();buildFx();render();return;}
+    }catch(e){}
+  }
+  isLoading=true;
+  document.getElementById('refreshBtn').disabled=true;
+  showSkel();
+  var results=await Promise.allSettled(FEEDS.map(function(f){return fetchFeed(f);}));
+  var arts=[],failed=[];
+  results.forEach(function(r,i){
+    if(r.status==='fulfilled'){arts=arts.concat(r.value);}
+    else{failed.push(FEEDS[i].n);console.warn('Feed mislukt:',FEEDS[i].n,r.reason&&r.reason.message);}
+  });
+  if(failed.length) console.info('Mislukte feeds ('+failed.length+'):',failed.join(', '));
+  if(!arts.length){
+    isLoading=false;document.getElementById('refreshBtn').disabled=false;
+    document.getElementById('statusBar').style.display='flex';
+    document.getElementById('statDot').className='dot error';
+    document.getElementById('statText').textContent='Kon geen nieuws laden. Probeer later opnieuw.';
+    document.getElementById('content').innerHTML='<div class="err-box">Kon geen nieuws laden.</div>';
+    return;
+  }
+  var seen=new Set();
+  arts=arts.filter(function(a){
+    var k=a.title.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,50);
+    if(seen.has(k))return false;seen.add(k);return true;
+  }).sort(function(a,b){return b.ts-a.ts;});
+  allArticles=arts;
+  try{localStorage.setItem(ck,JSON.stringify(arts));}catch(e){}
+  isLoading=false;document.getElementById('refreshBtn').disabled=false;
+  buildSnel();buildFx();render();
+}
+
+/* ══════════════════════════════════════════════
+   HEADER WIDGETS
+══════════════════════════════════════════════ */
+function buildFx(){
+  var pairs=[['EUR/USD',1.085,.003],['EUR/GBP',.858,.002],['BTC',93000,1.2]];
+  var html=pairs.map(function(p){
+    var chg=(Math.random()-.44)*p[2];
+    var val=p[2]<10?p[1].toFixed(p[0]==='BTC'?0:3):p[1].toFixed(0);
+    var sign=chg>=0?'+':'';
+    return'<div class="fx-tile"><span style="font-size:.52rem;color:var(--dim)">'+p[0]+'&nbsp;</span>'
+      +'<span class="fx-v">'+val+'</span>&nbsp;'
+      +'<span class="fx-chg '+(chg>=0?'pos':'neg')+'">'+sign+Math.abs(chg).toFixed(2)+'%</span></div>';
+  }).join('');
+  document.getElementById('hdrFx').innerHTML=html;
+}
+
+function buildSnel(){
+  var latest=allArticles.filter(function(a){return a.type==='news';}).slice(0,16);
+  if(!latest.length)return;
+  var doubled=latest.concat(latest);
+  var html=doubled.map(function(a,i){
+    return'<a class="snel-item" href="'+esc(a.link)+'" target="_blank" rel="noopener" onclick="markRead(\''+esc(a.link)+'\')">'
+      +'<span class="snel-t">'+relT(a.date)+'</span>'
+      +'<span class="snel-h">'+esc(a.title)+'</span>'
+      +(i<doubled.length-1?'<span class="snel-pip"></span>':'')
+      +'</a>';
+  }).join('');
+  document.getElementById('snelItems').innerHTML=html;
+  document.getElementById('snelBar').style.display='flex';
+}
+
+/* ══════════════════════════════════════════════
+   TRENDING
+══════════════════════════════════════════════ */
+function buildTrending(){
+  // Find words/phrases appearing in 3+ different article titles (as a proxy for trending)
+  var wordCount={};
+  var newsOnly=allArticles.filter(function(a){return a.type==='news';});
+  newsOnly.forEach(function(a){
+    var words=a.title.toLowerCase().replace(/[^\w\s]/g,'').split(/\s+/);
+    var skip=new Set(['the','a','an','in','on','at','to','of','and','or','for','is','are','was','were','has','have','been','will','with','that','this','but','from','by','als','de','het','een','van','dat','die','voor','naar','over','bij','kan','wordt','zijn','niet','ook','nog','wel','meer','uit','was','wordt','er','al']);
+    words.filter(function(w){return w.length>4&&!skip.has(w);}).forEach(function(w){
+      wordCount[w]=(wordCount[w]||0)+1;
+    });
+  });
+  var trending=Object.keys(wordCount).filter(function(w){return wordCount[w]>=3;})
+    .sort(function(a,b){return wordCount[b]-wordCount[a];}).slice(0,8);
+  return trending;
+}
+
+/* ══════════════════════════════════════════════
+   FILTER / SEARCH
+══════════════════════════════════════════════ */
+function activeArts(type){
+  var arts=allArticles.filter(function(a){
+    return a.type===type && !disabledSources[a.source];
+  });
+  if(currentFilter) arts=arts.filter(function(a){return a.cat===currentFilter;});
+  if(searchQuery){
+    var q=searchQuery.toLowerCase();
+    arts=arts.filter(function(a){
+      return a.title.toLowerCase().includes(q)||a.desc.toLowerCase().includes(q)||a.source.toLowerCase().includes(q);
+    });
+  }
+  return arts;
+}
+function newsArts()    {return activeArts('news');}
+function columnArts()  {return activeArts('column');}
+function artikelArts() {return activeArts('artikelen');}
+function podcastArts() {return activeArts('podcast');}
+
+function hlSearch(text){
+  if(!searchQuery) return esc(text);
+  var q=esc(searchQuery).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  return esc(text).replace(new RegExp('('+q+')', 'gi'),'<mark>$1</mark>');
+}
+
+/* ══════════════════════════════════════════════
+   SKELETON
+══════════════════════════════════════════════ */
+function showSkel(){
+  document.getElementById('content').innerHTML=
+    '<div class="sk-base sk-hero"></div>'
+    +'<div class="sk-row">'
+    +'<div class="sk-base sk-card"></div><div class="sk-base sk-card"></div><div class="sk-base sk-card"></div>'
+    +'</div>'
+    +'<div class="sk-list">'
+    +'<div class="sk-base sk-row-item"></div><div class="sk-base sk-row-item"></div><div class="sk-base sk-row-item"></div>'
+    +'</div>';
+}
+
+/* ══════════════════════════════════════════════
+   RENDER DISPATCHER
+══════════════════════════════════════════════ */
+function render(){
+  if(!allArticles.length) return;
+  var el=document.getElementById('content');
+  var noSub=['markten','podcasts','opgeslagen'];
+  document.getElementById('subBar').style.display=noSub.indexOf(currentView)!==-1?'none':'flex';
+  if(currentView==='home')       el.innerHTML=renderHome();
+  else if(currentView==='nieuws')     el.innerHTML=renderNieuwsLijst();
+  else if(currentView==='columns')    el.innerHTML=renderColumns();
+  else if(currentView==='artikelen')  el.innerHTML=renderArtikelen();
+  else if(currentView==='podcasts')   el.innerHTML=renderPodcasts();
+  else if(currentView==='markten')    {el.innerHTML=renderMarkten();initCharts();}
+  else if(currentView==='opgeslagen') el.innerHTML=renderOpgeslagen();
+  // Attach read tracking to all article links
+  el.querySelectorAll('a[href]').forEach(function(a){
+    a.addEventListener('click',function(){markRead(a.href);});
+  });
+}
+
+/* ══════════════════════════════════════════════
+   HOME TAB
+══════════════════════════════════════════════ */
+function renderHome(){
+  var arts=newsArts();
+  if(!arts.length) return'<div class="empty">Geen nieuws beschikbaar. Probeer te vernieuwen.</div>';
+  var hero=arts[0]; var shownLinks=new Set([hero.link]);
+
+  // Sidebar
+  var sideBySource={}, sideArts=[];
+  arts.slice(1).forEach(function(a){
+    if(sideArts.length>=14) return;
+    var cnt=sideBySource[a.source]||0;
+    if(cnt<2&&!shownLinks.has(a.link)){sideArts.push(a);shownLinks.add(a.link);sideBySource[a.source]=cnt+1;}
+  });
+
+  // Sections by cat
+  function secByCat(cat){
+    var found=[],usedSrc={};
+    allArticles.forEach(function(a){
+      if(a.type!=='news'||a.cat!==cat||shownLinks.has(a.link)||disabledSources[a.source]) return;
+      if((usedSrc[a.source]||0)>=1) return;
+      found.push(a);shownLinks.add(a.link);usedSrc[a.source]=(usedSrc[a.source]||0)+1;
+    });
+    return found.slice(0,6);
+  }
+  var tech=secByCat('tech'),biz=secByCat('business'),ai=secByCat('ai'),pol=secByCat('politiek');
+  var cols=trim3(columnArts().slice(0,9));
+  var lrs=trim2(artikelArts().slice(0,6));
+
+  // Trending
+  var trending=buildTrending();
+
+  var html='';
+
+  // Trending bar
+  if(trending.length>=4){
+    html+='<div class="trending-bar">'
+      +'<span class="trending-label">🔥 Trending</span>'
+      +'<div class="trending-items">'
+      +trending.map(function(w){
+        return'<a class="trending-item" href="#" onclick="event.preventDefault();setSearch(\''+esc(w)+'\')">'+esc(w)+'</a>';
+      }).join('')
+      +'</div></div>';
+  }
+
+  // Hero
+  html+='<div class="hero-layout">'
+    +'<a class="hero-main '+readClass(hero.link)+'" href="'+esc(hero.link)+'" target="_blank" rel="noopener">'
+    +imgWrap(hero,'','','4rem')
+    +bmBtn(hero)
+    +'<div class="hero-body">'
+    +'<div class="art-meta"><span class="src-tag">'+esc(hero.source)+'</span><span class="art-time">'+relT(hero.date)+'</span></div>'
+    +'<div class="hero-title">'+hlSearch(hero.title)+'</div>'
+    +(hero.desc?'<div class="hero-desc">'+hlSearch(hero.desc)+'…</div>':'')
+    +'<span class="rd-link">Lees artikel →</span>'
+    +'</div></a>'
+    +'<div class="hero-sidebar"><div class="sb-head">Laatste nieuws</div><div class="sb-list">'
+    +sideArts.map(function(a){
+      return'<a class="sb-item '+readClass(a.link)+'" href="'+esc(a.link)+'" target="_blank" rel="noopener">'
+        +'<div class="sb-meta"><span class="sb-src">'+esc(a.source)+'</span><span class="sb-time">'+relT(a.date)+'</span></div>'
+        +'<div class="sb-title">'+hlSearch(a.title)+'</div></a>';
+    }).join('')
+    +'</div></div></div>';
+
+  if(tech.length>=3) html+=secRow('Tech',tech);
+  if(biz.length>=3)  html+=secRow('Business &amp; Financiën',biz);
+  if(ai.length>=3)   html+=secRow('Kunstmatige intelligentie',ai);
+  if(pol.length>=3)  html+=secRow('Politiek',pol);
+  if(cols.length>=3){
+    html+='<div class="sec-head"><span class="sec-label">Columns &amp; Opinie</span></div>'
+      +'<div class="col-grid">'+cols.map(function(a,i){return colCard(a,i);}).join('')+'</div>';
+  }
+  if(lrs.length>=2){
+    html+='<div class="sec-head"><span class="sec-label">Lange artikelen</span></div>'
+      +'<div class="lr-grid">'+lrs.map(function(a){return lrCard(a);}).join('')+'</div>';
+  }
+  return html;
+}
+
+function secRow(title,arts){
+  var big=arts[0],smalls=arts.slice(1,3);
+  return'<div class="sec-head"><span class="sec-label">'+title+'</span></div>'
+    +'<div class="sec-grid">'
+    +'<a class="sec-big '+readClass(big.link)+'" href="'+esc(big.link)+'" target="_blank" rel="noopener">'
+    +imgWrap(big,'','','2.8rem')
+    +bmBtn(big)
+    +'<div class="sec-big-body">'
+    +'<div class="art-meta"><span class="src-tag">'+esc(big.source)+'</span><span class="read-time">'+estRead(big.desc)+' min</span><span class="art-time">'+relT(big.date)+'</span></div>'
+    +'<div class="sec-title">'+hlSearch(big.title)+'</div>'
+    +(big.desc?'<div class="sec-desc">'+hlSearch(big.desc)+'</div>':'')
+    +'</div></a>'
+    +'<div class="sec-smalls">'
+    +smalls.map(function(a){
+      return'<a class="sec-small '+readClass(a.link)+'" href="'+esc(a.link)+'" target="_blank" rel="noopener">'
+        +imgWrap(a,'68px','56px','1rem')
+        +'<div class="sec-small-body">'
+        +'<div class="sm-meta"><span class="src-tag">'+esc(a.source)+'</span><span class="art-time">'+relT(a.date)+'</span></div>'
+        +'<div class="sm-title">'+hlSearch(a.title)+'</div></div>'
+        +bmBtn(a)+'</a>';
+    }).join('')
+    +'</div></div>';
+}
+
+/* ══════════════════════════════════════════════
+   NIEUWS LIST TAB
+══════════════════════════════════════════════ */
+function renderNieuwsLijst(){
+  var arts=newsArts();
+  if(!arts.length) return'<div class="empty">Geen nieuws voor dit filter.</div>';
+  var html='<div class="sec-head"><span class="sec-label">Alle nieuws</span></div><div class="news-list">';
+  arts.slice(0,60).forEach(function(a){
+    html+='<a class="news-row '+readClass(a.link)+'" href="'+esc(a.link)+'" target="_blank" rel="noopener">'
+      +imgWrap(a,'86px','64px','1.2rem')
+      +'<div class="news-body">'
+      +'<div class="art-meta">'
+      +'<span style="font-family:\'DM Mono\',monospace;font-size:.55rem;color:var(--pu-l)">'+esc(a.cat.toUpperCase())+'</span>'
+      +'<span class="src-tag">'+esc(a.source)+'</span>'
+      +'<span class="read-time">'+estRead(a.desc)+' min</span>'
+      +'<span class="art-time">'+relT(a.date)+'</span></div>'
+      +'<div class="news-title">'+hlSearch(a.title)+'</div>'
+      +(a.desc?'<div class="news-desc">'+hlSearch(a.desc)+'</div>':'')
+      +'</div>'
+      +'<button class="news-bm'+(isSaved(a.link)?' saved':'')+'" data-link="'+esc(a.link)+'" title="Opslaan" onclick="event.preventDefault();bmClick(this,event)">🔖</button>'
+      +'</a>';
+  });
+  html+='</div>';
+  if(searchQuery && arts.length===0) html='<div class="empty">Geen resultaten voor "'+esc(searchQuery)+'".</div>';
+  return html;
+}
+
+/* ══════════════════════════════════════════════
+   COLUMNS TAB
+══════════════════════════════════════════════ */
+function renderColumns(){
+  var arts=trim3(columnArts().slice(0,15));
+  if(!arts.length) return'<div class="empty">Geen columns beschikbaar. Probeer later opnieuw.</div>';
+  return'<div class="sec-head"><span class="sec-label">Columns &amp; Opinie</span></div>'
+    +'<div class="col-grid">'+arts.map(function(a,i){return colCard(a,i);}).join('')+'</div>';
+}
+function colCard(a,i){
+  var g=srcGrad(a.source);
+  return'<a class="col-card '+readClass(a.link)+'" href="'+esc(a.link)+'" target="_blank" rel="noopener" style="animation-delay:'+(i*.06)+'s">'
+    +imgWrap(a,'','','2.2rem')
+    +bmBtn(a)
+    +'<div style="padding:12px 14px 16px;display:flex;flex-direction:column;gap:7px;flex:1">'
+    +'<div style="display:flex;align-items:center;gap:9px">'
+    +'<div class="col-avatar" style="background:'+g.bg+';color:rgba(255,255,255,.8)">'+g.init+'</div>'
+    +'<div><div class="col-source">'+esc(a.source)+'</div>'
+    +'<div style="font-family:\'DM Mono\',monospace;font-size:.52rem;color:var(--dim)">'+relT(a.date)+'</div></div>'
+    +'</div>'
+    +'<div class="col-title">'+hlSearch(a.title)+'</div>'
+    +(a.desc?'<div class="col-desc">'+hlSearch(a.desc)+'</div>':'')
+    +'<div class="col-link">Lees verder →</div>'
+    +'</div></a>';
+}
+
+/* ══════════════════════════════════════════════
+   ARTIKELEN TAB
+══════════════════════════════════════════════ */
+function renderArtikelen(){
+  var arts=trim2(artikelArts().slice(0,12));
+  if(!arts.length) return'<div class="empty">Geen artikelen beschikbaar. Probeer later opnieuw.</div>';
+  return'<div class="sec-head"><span class="sec-label">Artikelen &amp; Achtergrond</span></div>'
+    +'<div class="lr-grid">'+arts.map(function(a){return lrCard(a);}).join('')+'</div>';
+}
+function lrCard(a){
+  return'<a class="lr-card '+readClass(a.link)+'" href="'+esc(a.link)+'" target="_blank" rel="noopener">'
+    +imgWrap(a,'','','3rem')
+    +bmBtn(a)
+    +'<div class="lr-body">'
+    +'<div class="art-meta"><span class="src-tag">'+esc(a.source)+'</span><span class="read-time">'+estRead(a.desc)+' min lezen</span><span class="art-time">'+relT(a.date)+'</span></div>'
+    +'<div class="lr-title">'+hlSearch(a.title)+'</div>'
+    +(a.desc?'<div class="lr-desc">'+hlSearch(a.desc)+'…</div>':'')
+    +'</div></a>';
+}
+
+/* ══════════════════════════════════════════════
+   PODCASTS TAB
+══════════════════════════════════════════════ */
+function renderPodcasts(){
+  var arts=trim2(podcastArts().slice(0,12));
+  if(!arts.length) return'<div class="empty">Geen podcasts beschikbaar. Probeer later opnieuw.</div>';
+  return'<div class="sec-head"><span class="sec-label">🎙 Podcasts</span></div>'
+    +'<div class="pod-grid">'+arts.map(function(a,i){return podCard(a,i);}).join('')+'</div>';
+}
+function podCard(a,i){
+  var hasAudio=!!(a.audio);
+  var dur=a.duration?formatDur(a.duration):'';
+  return'<div class="pod-card" style="animation-delay:'+(i*.06)+'s">'
+    +imgWrap(a,'','','2.2rem')
+    +'<div class="pod-body">'
+    +'<div class="pod-show">'+esc(a.source)+'</div>'
+    +'<div class="pod-title">'+esc(a.title)+'</div>'
+    +(a.desc?'<div class="pod-desc">'+esc(a.desc)+'</div>':'')
+    +'<div class="pod-player">'
+    +(hasAudio
+      ?'<button class="pod-play" data-audio="'+esc(a.audio)+'" data-idx="'+i+'" onclick="podPlay(this)" title="Afspelen">▶</button>'
+       +'<div class="pod-prog-wrap" id="podProg_'+i+'"><div class="pod-prog" id="podProgBar_'+i+'"></div></div>'
+       +(dur?'<span class="pod-dur" id="podDur_'+i+'">'+dur+'</span>':'')
+      :'<span style="font-family:\'DM Mono\',monospace;font-size:.55rem;color:var(--dim)">Geen audio beschikbaar</span>')
+    +'<a class="pod-ext" href="'+esc(a.link)+'" target="_blank" rel="noopener">↗</a>'
+    +'</div></div></div>';
+}
+function formatDur(d){
+  if(!d) return'';
+  var s=parseInt(d,10);
+  if(isNaN(s)){// already formatted HH:MM:SS
+    return d.split(':').slice(-2).join(':');
+  }
+  var m=Math.floor(s/60),ss=s%60;
+  if(m>=60){var h=Math.floor(m/60);return h+'u '+(m%60)+'m';}
+  return m+'m '+(ss<10?'0':'')+ss+'s';
+}
+function podPlay(btn){
+  var audioSrc=btn.dataset.audio;
+  var idx=btn.dataset.idx;
+  // If same card, toggle pause
+  if(currentAudioCard===idx && currentAudio){
+    if(currentAudio.paused){currentAudio.play();btn.textContent='⏸';btn.classList.add('playing');}
+    else{currentAudio.pause();btn.textContent='▶';btn.classList.remove('playing');}
+    return;
+  }
+  // Stop previous
+  if(currentAudio){currentAudio.pause();if(currentAudioCard!==null){var pb=document.querySelector('.pod-play.playing');if(pb){pb.textContent='▶';pb.classList.remove('playing');}}}
+  currentAudio=new Audio(audioSrc);
+  currentAudioCard=idx;
+  btn.textContent='⏸';btn.classList.add('playing');
+  var progWrap=document.getElementById('podProg_'+idx);
+  var progBar=document.getElementById('podProgBar_'+idx);
+  var durEl=document.getElementById('podDur_'+idx);
+  currentAudio.addEventListener('timeupdate',function(){
+    if(currentAudio.duration){
+      var pct=(currentAudio.currentTime/currentAudio.duration*100).toFixed(1);
+      if(progBar) progBar.style.width=pct+'%';
+      if(durEl){
+        var rem=currentAudio.duration-currentAudio.currentTime;
+        var m=Math.floor(rem/60),s=Math.floor(rem%60);
+        durEl.textContent='-'+m+':'+(s<10?'0':'')+s;
+      }
+    }
+  });
+  currentAudio.addEventListener('ended',function(){btn.textContent='▶';btn.classList.remove('playing');if(progBar) progBar.style.width='100%';});
+  currentAudio.play().catch(function(){btn.textContent='▶';btn.classList.remove('playing');});
+}
+window.podPlay=podPlay;
+
+/* ══════════════════════════════════════════════
+   OPGESLAGEN TAB
+══════════════════════════════════════════════ */
+function renderOpgeslagen(){
+  var arts=getSaved();
+  if(!arts.length) return'<div class="saved-empty">'
+    +'<div class="saved-empty-icon">🔖</div>'
+    +'<div class="saved-empty-text">Nog niets opgeslagen.<br>Klik op 🔖 bij een artikel om het op te slaan.</div>'
+    +'</div>';
+  return'<div class="sec-head"><span class="sec-label">🔖 Opgeslagen artikelen</span></div>'
+    +'<div class="news-list">'
+    +arts.map(function(a){
+      return'<a class="news-row" href="'+esc(a.link)+'" target="_blank" rel="noopener">'
+        +imgWrap(a,'86px','64px','1.2rem')
+        +'<div class="news-body">'
+        +'<div class="art-meta"><span class="src-tag">'+esc(a.source)+'</span><span class="art-time">'+relT(a.date)+'</span></div>'
+        +'<div class="news-title">'+esc(a.title)+'</div>'
+        +(a.desc?'<div class="news-desc">'+esc(a.desc)+'</div>':'')
+        +'</div>'
+        +'<button class="news-bm saved" data-link="'+esc(a.link)+'" title="Verwijder" onclick="event.preventDefault();unsaveArt(\''+esc(a.link)+'\');render();">🔖</button>'
+        +'</a>';
+    }).join('')
+    +'</div>'
+    +'<div style="text-align:center;padding:16px">'
+    +'<button class="saved-clear" onclick="if(confirm(\'Alle opgeslagen artikelen wissen?\')){localStorage.removeItem(\'jn_saved\');updateSavedBadge();render();}">Alles wissen</button>'
+    +'</div>';
+}
+
+/* ══════════════════════════════════════════════
+   MARKTEN TAB
+══════════════════════════════════════════════ */
+function genData(base,vol,pts,trend){
+  var d=[],v=base;
+  for(var i=0;i<pts;i++){v=v*(1+(Math.random()-.48)*vol)+(trend||0);d.push(parseFloat(v.toFixed(2)));}
+  return d;
+}
+function genLabels(period){
+  var pts=period==='1D'?24:period==='1W'?7:period==='1M'?30:period==='3M'?12:period==='1J'?12:52;
+  var labels=[];
+  var days=['Ma','Di','Wo','Do','Vr','Za','Zo'];
+  var m=['Jan','Feb','Mrt','Apr','Mei','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
+  var cm=new Date().getMonth();
+  if(period==='1D'){for(var i=0;i<pts;i++)labels.push(i+':00');}
+  else if(period==='1W'){for(var i=0;i<pts;i++)labels.push(days[i%7]);}
+  else if(period==='1M'){for(var i=1;i<=pts;i++)labels.push(i+'');}
+  else{for(var i=0;i<pts;i++)labels.push(m[(cm-pts+1+i+12)%12]);}
+  return labels;
+}
+
+var INSTRUMENTS=[
+  {id:'aex',   name:'AEX',     sub:'Amsterdam',   base:880,   vol:.008,trend:.2,  grp:'index'},
+  {id:'sp500', name:'S&P 500', sub:'New York',     base:5800,  vol:.006,trend:1.5, grp:'index'},
+  {id:'eurusd',name:'EUR/USD', sub:'Wisselkoers',  base:1.085, vol:.003,trend:.0001,grp:'fx'},
+  {id:'eurgbp',name:'EUR/GBP', sub:'Wisselkoers',  base:0.858, vol:.002,trend:.00005,grp:'fx'},
+];
+var CRYPTO=[
+  {id:'btc',   name:'Bitcoin', sub:'BTC/USD',      base:93000, vol:.025,trend:5,  color:'#f97316'},
+  {id:'eth',   name:'Ethereum',sub:'ETH/USD',       base:3200,  vol:.030,trend:1,  color:'#60a5fa'},
+  {id:'sol',   name:'Solana',  sub:'SOL/USD',       base:155,   vol:.040,trend:.05,color:'#a78bfa'},
+];
+
+function renderMarkten(){
+  var btns=['1D','1W','1M','3M','1J'].map(function(p){
+    return'<button class="t-btn'+(p===mktPeriod?' active':'')+'" data-period="'+p+'">'+p+'</button>';
+  }).join('');
+
+  function makeTile(ins){
+    var chg=(Math.random()-.42)*2;
+    var val=ins.base*(1+(chg/100));
+    var fmt=(ins.id==='eurusd'||ins.id==='eurgbp')?val.toFixed(4):val.toFixed(0);
+    return'<div class="ticker-tile"><div class="tt-name">'+ins.name+'</div>'
+      +'<div class="tt-val">'+fmt+'</div>'
+      +'<div class="tt-chg '+(chg>=0?'pos':'neg')+'">'+(chg>=0?'▲':'▼')+' '+Math.abs(chg).toFixed(2)+'%</div>'
+      +'<div class="tt-upd">'+ins.sub+'</div></div>';
+  }
+  var tiles=INSTRUMENTS.map(makeTile).join('');
+  var cryptoTiles=CRYPTO.map(function(ins){
+    var chg=(Math.random()-.4)*4;
+    var val=ins.base*(1+(chg/100));
+    return'<div class="ticker-tile"><div class="tt-name">'+ins.name+'</div>'
+      +'<div class="tt-val" style="color:'+ins.color+'">$'+val.toFixed(0)+'</div>'
+      +'<div class="tt-chg '+(chg>=0?'pos':'neg')+'">'+(chg>=0?'▲':'▼')+' '+Math.abs(chg).toFixed(2)+'%</div>'
+      +'<div class="tt-upd">'+ins.sub+'</div></div>';
+  }).join('');
+
+  var chartCards=INSTRUMENTS.map(function(ins,idx){
+    return'<div class="chart-card'+(idx===0?' chart-card-wide':'')+'">'
+      +'<div class="chart-head"><span class="chart-name">'+ins.name+'</span><span class="chart-val" id="cval_'+ins.id+'">—</span>'
+      +'<span class="chart-chg" id="cchg_'+ins.id+'"></span>'
+      +'<span class="chart-sub">'+ins.sub+'</span></div>'
+      +'<div class="chart-body"><canvas class="chart-canvas" id="chart_'+ins.id+'" height="'+(idx===0?90:110)+'"></canvas></div>'
+      +'</div>';
+  }).join('');
+
+  return'<div class="markten-header">'
+    +'<div class="markten-title">Markten</div>'
+    +'<div class="time-btns" id="timeBtns">'+btns+'</div>'
+    +'</div>'
+    +'<p class="mkt-section-title">Indices &amp; Valuta</p>'
+    +'<div class="ticker-row">'+tiles+'</div>'
+    +'<div class="charts-grid">'+chartCards+'</div>'
+    +'<p class="mkt-section-title">Crypto</p>'
+    +'<div class="crypto-row">'+cryptoTiles+'</div>'
+    +'<div style="font-family:\'DM Mono\',monospace;font-size:.55rem;color:var(--dim);text-align:center;padding:8px 0 16px">⚠ Alle marktgegevens zijn gesimuleerd voor illustratiedoeleinden.</div>';
+}
+function initCharts(){
+  var timeBtns=document.getElementById('timeBtns');
+  if(timeBtns) timeBtns.querySelectorAll('.t-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      mktPeriod=btn.dataset.period;
+      Object.values(charts).forEach(function(c){c.destroy();});charts={};
+      document.querySelectorAll('.t-btn').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');buildCharts();
+    });
+  });
+  buildCharts();
+}
+function buildCharts(){
+  if(typeof Chart==='undefined') return;
+  INSTRUMENTS.forEach(function(ins){
+    var canvas=document.getElementById('chart_'+ins.id);
+    if(!canvas) return;
+    if(charts[ins.id]) charts[ins.id].destroy();
+    var labels=genLabels(mktPeriod);
+    var data=genData(ins.base,ins.vol,labels.length,ins.trend);
+    var last=data[data.length-1],first=data[0];
+    var up=last>=first;
+    var col=up?'#34d399':'#f87171';
+    var chgPct=((last-first)/first*100).toFixed(2);
+    var valEl=document.getElementById('cval_'+ins.id);
+    var chgEl=document.getElementById('cchg_'+ins.id);
+    if(valEl) valEl.textContent=(ins.id==='eurusd'||ins.id==='eurgbp')?last.toFixed(4):last.toFixed(0);
+    if(chgEl){chgEl.textContent=(up?'▲ +':'▼ ')+chgPct+'%';chgEl.className='chart-chg '+(up?'pos':'neg');}
+    var ctx=canvas.getContext('2d');
+    var grad=ctx.createLinearGradient(0,0,0,canvas.offsetHeight||120);
+    grad.addColorStop(0,col.replace('#','rgba(').replace(/(..)(..)(..)$/,function(_,r,g,b){return parseInt(r,16)+','+parseInt(g,16)+','+parseInt(b,16)+',';})+'.15)');
+    grad.addColorStop(1,'rgba(0,0,0,0)');
+    charts[ins.id]=new Chart(ctx,{
+      type:'line',
+      data:{labels:labels,datasets:[{data:data,borderColor:col,borderWidth:1.5,pointRadius:0,fill:true,backgroundColor:grad,tension:.35}]},
+      options:{responsive:true,maintainAspectRatio:true,animation:false,
+        plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,
+          backgroundColor:'#18182a',borderColor:'#2a2a42',borderWidth:1,
+          titleColor:'#a78bfa',bodyColor:'#ddddf2',
+          titleFont:{family:'DM Mono',size:10},bodyFont:{family:'DM Mono',size:11},
+          callbacks:{label:function(c){return' '+(ins.id==='eurusd'||ins.id==='eurgbp'?c.parsed.y.toFixed(4):c.parsed.y.toFixed(0));}}}},
+        scales:{
+          x:{grid:{color:'rgba(30,30,48,.5)',drawBorder:false},ticks:{color:'#35355a',font:{family:'DM Mono',size:9},maxTicksLimit:8}},
+          y:{grid:{color:'rgba(30,30,48,.5)',drawBorder:false},ticks:{color:'#35355a',font:{family:'DM Mono',size:9},maxTicksLimit:5},position:'right'}
+        }}
+    });
+  });
+}
+
+/* ══════════════════════════════════════════════
+   SEARCH
+══════════════════════════════════════════════ */
+window.setSearch=function(q){
+  searchQuery=q;
+  var inp=document.getElementById('searchInput');
+  if(inp) inp.value=q;
+  openSearch();
+  renderSearch();
+};
+function openSearch(){
+  searchActive=true;
+  document.getElementById('searchBar').classList.add('open');
+  document.getElementById('searchBtn').classList.add('active');
+  setTimeout(function(){document.getElementById('searchInput').focus();},220);
+}
+function closeSearch(){
+  searchActive=false;searchQuery='';
+  document.getElementById('searchBar').classList.remove('open');
+  document.getElementById('searchBtn').classList.remove('active');
+  document.getElementById('searchInput').value='';
+  document.getElementById('searchCount').textContent='';
+  render();
+}
+function renderSearch(){
+  var q=searchQuery.toLowerCase().trim();
+  if(!q){document.getElementById('searchCount').textContent='';render();return;}
+  var all=allArticles.filter(function(a){
+    return a.title.toLowerCase().includes(q)||a.desc.toLowerCase().includes(q)||a.source.toLowerCase().includes(q);
+  });
+  document.getElementById('searchCount').textContent=all.length+' resultaten';
+  var el=document.getElementById('content');
+  document.getElementById('subBar').style.display='none';
+  if(!all.length){el.innerHTML='<div class="empty">Geen resultaten voor "'+esc(q)+'".</div>';return;}
+  var html='<div class="sec-head"><span class="sec-label">Zoekresultaten voor "'+esc(q)+'"</span></div><div class="news-list">';
+  all.slice(0,40).forEach(function(a){
+    html+='<a class="news-row '+readClass(a.link)+'" href="'+esc(a.link)+'" target="_blank" rel="noopener">'
+      +imgWrap(a,'86px','64px','1.2rem')
+      +'<div class="news-body">'
+      +'<div class="art-meta"><span class="src-tag">'+esc(a.source)+'</span><span class="read-time">'+estRead(a.desc)+' min</span><span class="art-time">'+relT(a.date)+'</span></div>'
+      +'<div class="news-title">'+hlSearch(a.title)+'</div>'
+      +(a.desc?'<div class="news-desc">'+hlSearch(a.desc)+'</div>':'')
+      +'</div>'
+      +'<button class="news-bm'+(isSaved(a.link)?' saved':'')+'" data-link="'+esc(a.link)+'" onclick="event.preventDefault();bmClick(this,event)">🔖</button>'
+      +'</a>';
+  });
+  html+='</div>';
+  el.innerHTML=html;
+  el.querySelectorAll('a[href]').forEach(function(a){a.addEventListener('click',function(){markRead(a.href);});});
+}
+
+/* ══════════════════════════════════════════════
+   SETTINGS PANEL
+══════════════════════════════════════════════ */
+function buildSettingsToggles(){
+  disabledSources=getDisabled();
+  var html='';
+  FEEDS.forEach(function(f){
+    var enabled=!disabledSources[f.n];
+    html+='<div class="src-toggle">'
+      +'<span class="src-toggle-name">'+esc(f.n)+'</span>'
+      +'<span class="src-toggle-type">'+f.type+'</span>'
+      +'<label class="toggle"><input type="checkbox"'+(enabled?' checked':'')
+      +' onchange="toggleSource(\''+esc(f.n)+'\',this.checked)"><span class="toggle-slider"></span></label>'
+      +'</div>';
+  });
+  document.getElementById('srcToggles').innerHTML=html;
+}
+window.toggleSource=function(name,enabled){
+  if(enabled){delete disabledSources[name];}else{disabledSources[name]=true;}
+  saveDisabled();render();
+};
+
+function openSettings(){
+  buildSettingsToggles();
+  document.getElementById('settingsPanel').classList.add('open');
+  document.getElementById('settingsOverlay').classList.add('open');
+  document.getElementById('settingsBtn').classList.add('active');
+}
+function closeSettings(){
+  document.getElementById('settingsPanel').classList.remove('open');
+  document.getElementById('settingsOverlay').classList.remove('open');
+  document.getElementById('settingsBtn').classList.remove('active');
+}
+
+/* ══════════════════════════════════════════════
+   THEME
+══════════════════════════════════════════════ */
+function applyTheme(t){
+  document.body.classList.toggle('dim-mode',t==='dim');
+  document.getElementById('themeZwart').classList.toggle('active',t==='zwart');
+  document.getElementById('themeDim').classList.toggle('active',t==='dim');
+  saveTheme(t);
+}
+
+/* ══════════════════════════════════════════════
+   KEYBOARD SHORTCUTS
+══════════════════════════════════════════════ */
+var kbBuf='',kbTimer=null;
+var toastTimer=null;
+function showToast(msg){
+  var t=document.getElementById('kbdToast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(function(){t.classList.remove('show');},1200);
+}
+function switchView(v,label){
+  currentView=v;currentFilter=null;
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+  var btn=document.querySelector('.tab-btn[data-tab="'+v+'"]');
+  if(btn) btn.classList.add('active');
+  document.querySelectorAll('.f-chip').forEach(function(b){b.classList.remove('active');});
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(allArticles.length) render();
+  if(label) showToast(label);
+}
+document.addEventListener('keydown',function(ev){
+  var tag=document.activeElement.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA') return;
+  if(ev.key==='Escape'){
+    if(searchActive){closeSearch();return;}
+    if(document.getElementById('settingsPanel').classList.contains('open')){closeSettings();return;}
+  }
+  if(ev.key==='/'){ev.preventDefault();openSearch();return;}
+  if(ev.key==='r'||ev.key==='R'){loadNews(true);showToast('Vernieuwen…');return;}
+  // G + letter
+  if(ev.key.toUpperCase()==='G'){kbBuf='G';clearTimeout(kbTimer);kbTimer=setTimeout(function(){kbBuf='';},800);return;}
+  if(kbBuf==='G'){
+    kbBuf='';clearTimeout(kbTimer);
+    var map={H:'home',N:'nieuws',C:'columns',A:'artikelen',M:'markten',P:'podcasts',S:'opgeslagen'};
+    var labels={H:'Home',N:'Nieuws',C:'Columns',A:'Artikelen',M:'Markten',P:'Podcasts',S:'Opgeslagen'};
+    var k=ev.key.toUpperCase();
+    if(map[k]){ev.preventDefault();switchView(map[k],labels[k]);}
+  }
+});
+
+/* ══════════════════════════════════════════════
+   EVENTS
+══════════════════════════════════════════════ */
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+    btn.classList.add('active');
+    currentView=btn.dataset.tab;
+    if(searchActive) closeSearch();
+    if(allArticles.length) render();
+  });
+});
+document.querySelectorAll('.f-chip').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    if(currentFilter===btn.dataset.filter){currentFilter=null;document.querySelectorAll('.f-chip').forEach(function(b){b.classList.remove('active');});}
+    else{document.querySelectorAll('.f-chip').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');currentFilter=btn.dataset.filter;}
+    if(allArticles.length) render();
+  });
+});
+document.getElementById('refreshBtn').addEventListener('click',function(){loadNews(true);});
+document.getElementById('logoLink').addEventListener('click',function(e){
+  e.preventDefault();switchView('home');
+});
+document.getElementById('searchBtn').addEventListener('click',function(){
+  if(searchActive) closeSearch(); else openSearch();
+});
+document.getElementById('searchInput').addEventListener('input',function(){
+  searchQuery=this.value;renderSearch();
+});
+document.getElementById('settingsBtn').addEventListener('click',function(){
+  if(document.getElementById('settingsPanel').classList.contains('open')) closeSettings(); else openSettings();
+});
+document.getElementById('settingsClose').addEventListener('click',closeSettings);
+document.getElementById('settingsOverlay').addEventListener('click',closeSettings);
+document.getElementById('themeZwart').addEventListener('click',function(){applyTheme('zwart');});
+document.getElementById('themeDim').addEventListener('click',function(){applyTheme('dim');});
+document.getElementById('backTop').addEventListener('click',function(){window.scrollTo({top:0,behavior:'smooth'});});
+window.addEventListener('scroll',function(){
+  document.getElementById('backTop').classList.toggle('visible',window.scrollY>600);
+});
+window.markRead=markRead;
+window.unsaveArt=unsaveArt;
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
+document.getElementById('hdrDate').textContent=fmtDate(new Date());
+applyTheme(getTheme());
+disabledSources=getDisabled();
+updateSavedBadge();
+loadNews(false);
+</script>
+</body>
+</html>
